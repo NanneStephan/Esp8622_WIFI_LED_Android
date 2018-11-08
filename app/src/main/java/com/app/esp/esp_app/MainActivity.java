@@ -7,7 +7,6 @@ import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.view.animation.BounceInterpolator;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -19,43 +18,44 @@ import java.net.UnknownHostException;
 
 public class MainActivity extends AppCompatActivity {
 
-    Boolean l1,l2,l3,turn;
+    Boolean l1, l2, l3, turn;
     static WifiManager wifiManager;
     Context context;
     WifiConfiguration conf;
-    public static String networkSSID="esp_abc";
-    public static String networkPass="esp123";
+    public static String networkSSID = "esp_abc";
+    public static String networkPass = "esp123";
     byte[] buf = new byte[1024];//used to sending information to esp is a form of byte
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        l1=l2=l3=turn=true;
-        context=this;
-		
-		// this is for thread policy the AOS doesn't allow to transfer data using wifi module so we take the permission
+        l1 = l2 = l3 = turn = true;
+        context = this;
+
+        // this is for thread policy the AOS doesn't allow to transfer data using wifi module so we take the permission
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
     }
 
-	// conected with a wifi button.. it connect to esp module when it is pressed
-	//remember the nework ssid and pasword needs to be the same as given here
-	//other it won't connect
-    public void wifi_connect(View v){
+    // connected with a wifi button.. it connect to esp module when it is pressed
+    //remember the network ssid and password needs to be the same as given here
+    //other it won't connect
+    public void wifi_connect(View v) {
 
 
         wifiManager = (WifiManager) context
                 .getSystemService(Context.WIFI_SERVICE);
 
-            if(turn){
+        if (turn) {
 
             turnOnOffWifi(context, turn);
-            turn=false;
+            turn = false;
             Toast.makeText(getApplicationContext(), "turning on...", Toast.LENGTH_SHORT).show();
 
-			//wifi configuration .. all the code below is to explain the wifi configuration of which type the wifi is
-			//if it is a WPA-PSK protocol then it would work
-			
+            //wifi configuration .. all the code below is to explain the wifi configuration of which type the wifi is
+            //if it is a WPA-PSK protocol then it would work
+
             conf = new WifiConfiguration();
             conf.SSID = "\"" + networkSSID + "\"";
             conf.preSharedKey = "\"" + networkPass + "\"";
@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
             conf.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
             conf.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
             conf.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
-            int netid= wifiManager.addNetwork(conf);
+            int netid = wifiManager.addNetwork(conf);
             wifiManager.disconnect();
             wifiManager.enableNetwork(netid, true);
             wifiManager.reconnect();
@@ -80,78 +80,56 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-	
-	// when LED 1 BUTTON is pressed
-    public void led_1(View v){
+
+    // OnBoard LED On if Button is pressed
+    public void led_1(View v) {
 
 
-        if(l1){
+        if (l1) {
 
-            l1=false;
-            Client a=new Client();
-            buf=null;
-            buf=("9").getBytes();
+            l1 = false;
+            Client a = new Client();
+            buf = null;
+            buf = ("9").getBytes();
             a.run();
             Toast.makeText(MainActivity.this, "LED 1 ON", Toast.LENGTH_SHORT).show();
-        }else{
+        } else {
 
-            l1=true;
-            Client a=new Client();//object of class client
-            buf=null;
-            buf=("10").getBytes();// value to be send to esp
+            l1 = true;
+            Client a = new Client();//object of class client
+            buf = null;
+            buf = ("10").getBytes();// value to be send to esp
             a.run(); //use run() in class client to send data
             Toast.makeText(MainActivity.this, "LED 1 OFF", Toast.LENGTH_SHORT).show();
         }
 
 
     }
-	// when LED 3 BUTTON is pressed
-    public void led_2(View v){
 
-        if(l2){
+    // External LED On if Button is pressed
+    public void led_2(View v) {
 
-            l2=false;
-            Client a=new Client();
-            buf=null;
-            buf=("11").getBytes();
+        if (l2) {
+
+            l2 = false;
+            Client a = new Client();
+            buf = null;
+            buf = ("11").getBytes();
             a.run();
             Toast.makeText(MainActivity.this, "LED 2 ON", Toast.LENGTH_SHORT).show();
-        }else{
+        } else {
 
-            l2=true;
-            Client a=new Client();
-            buf=null;
-            buf=("12").getBytes();
+            l2 = true;
+            Client a = new Client();
+            buf = null;
+            buf = ("12").getBytes();
             a.run();
             Toast.makeText(MainActivity.this, "LED 2 OFF", Toast.LENGTH_SHORT).show();
         }
 
 
-
-		}
-
-// when LED 3 BUTTON is pressed
-		public void led_3(View v){
-
-        if(l3){
-
-            l3=false;
-            Client a=new Client();
-            buf=null;
-            buf=("13").getBytes();
-            a.run();
-            Toast.makeText(MainActivity.this, "LED 3 ON", Toast.LENGTH_SHORT).show();
-        }else{
-
-            l3=true;
-            Client a=new Client();
-            buf=null;
-            buf=("14").getBytes();
-            a.run();
-            Toast.makeText(MainActivity.this, "LED 3 OFF", Toast.LENGTH_SHORT).show();
-        }
-
     }
+
 
     public static void turnOnOffWifi(Context context, boolean isTurnToOn) {
         wifiManager = (WifiManager) context
@@ -159,13 +137,13 @@ public class MainActivity extends AppCompatActivity {
         wifiManager.setWifiEnabled(isTurnToOn);
     }
 
-//used to send data to esp module
-    public class Client implements Runnable{
+    //used to send data to esp module
+    public class Client implements Runnable {
         private final static String SERVER_ADDRESS = "192.168.4.1";//public ip of my server
-        private final static int SERVER_PORT = 8888; 
+        private final static int SERVER_PORT = 8888;
 
 
-        public void run(){
+        public void run() {
 
             InetAddress serverAddr;
             DatagramPacket packet;
@@ -174,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
 
             try {
                 serverAddr = InetAddress.getByName(SERVER_ADDRESS);
-                 socket = new DatagramSocket(); //DataGram socket is created
+                socket = new DatagramSocket(); //DataGram socket is created
                 packet = new DatagramPacket(buf, buf.length, serverAddr, SERVER_PORT);//Data is loaded with information where to send on address and port number
                 socket.send(packet);//Data is send in the form of packets
                 socket.close();//Needs to close the socket before other operation... its a good programming
